@@ -29,6 +29,9 @@ A C++ application that processes FBX files according to the following requiremen
    ```
    cmake --build .
    ```
+### WARNING: 
+In some cases, the libfbxsdk.dylib file that is located in the FBX directory is not being propeperly located by the build. 
+In that scenario, you can directly copy the file into the build folder, or specify it's location directly in the CMakeLists.txt in atttempt to solve this.
 
 ## Usage
 
