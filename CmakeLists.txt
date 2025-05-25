@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 3.10)
+project(FBXProcessor)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Set these variables to match your FBX SDK installation path
+set(FBX_SDK_ROOT "/Applications/Autodesk/FBX SDK/2020.3.7" CACHE PATH "FBX SDK root directory")
+set(FBX_INCLUDE_DIR "${FBX_SDK_ROOT}/include")
+
+# Find the correct library paths based on compiler and architecture
+if(MSVC)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        # 64-bit build
+        set(FBX_LIBRARY_DIR "${FBX_SDK_ROOT}/lib/vs2019/x64/release")
+        set(FBX_LIBRARY_NAME "libfbxsdk.lib")
+    else()
+        # 32-bit build
+        set(FBX_LIBRARY_DIR "${FBX_SDK_ROOT}/lib/vs2019/x86/release")
+        set(FBX_LIBRARY_NAME "libfbxsdk.lib")
+    endif()
+elseif(APPLE)
+    set(FBX_LIBRARY_DIR "${FBX_SDK_ROOT}/lib/clang/release")
+    set(FBX_LIBRARY_NAME "libfbxsdk.a")
+else() # Linux
+    set(FBX_LIBRARY_DIR "${FBX_SDK_ROOT}/lib/gcc/release")
+    set(FBX_LIBRARY_NAME "libfbxsdk.a")
+endif()
+
+# Create the executable
+add_executable(FBXProcessor main.cpp)
+
+# Include directories
+target_include_directories(FBXProcessor PRIVATE ${FBX_INCLUDE_DIR})
+
+# Link libraries
+target_link_directories(FBXProcessor PRIVATE ${FBX_LIBRARY_DIR})
+target_link_libraries(FBXProcessor PRIVATE ${FBX_LIBRARY_NAME})
+
+# Add additional dependencies based on platform
+if(UNIX AND NOT APPLE)
+    # Linux specific dependencies for FBX SDK
+    target_link_libraries(FBXProcessor PRIVATE pthread dl rt)
+elseif(APPLE)
+    # macOS specific frameworks for FBX SDK
+    target_link_libraries(FBXProcessor PRIVATE "-framework CoreFoundation" "-framework SystemConfiguration")
+endif()
+
+# Copy executable to the binary directory
+install(TARGETS FBXProcessor DESTINATION bin)
+
+# Print information about the configuration
+message(STATUS "FBX SDK Root: ${FBX_SDK_ROOT}")
+message(STATUS "FBX Include Directory: ${FBX_INCLUDE_DIR}")
+message(STATUS "FBX Library Directory: ${FBX_LIBRARY_DIR}")
+message(STATUS "FBX Library Name: ${FBX_LIBRARY_NAME}")
